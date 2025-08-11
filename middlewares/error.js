@@ -1,15 +1,14 @@
-// Middleware xử lý lỗi toàn cục
 export const errorHandler = (err, req, res, next) => {
-    console.error("❌ Error:", err);
-
-    // Nếu là lỗi đã xác định
+    // Lấy statusCode, mặc định 500
     const statusCode = err.statusCode || 500;
-    const message = err.message || "Internal Server Error";
+
+    // Ẩn stack trace trong production
+    const isDev = process.env.NODE_ENV === "development";
 
     res.status(statusCode).json({
         success: false,
-        message,
-        // Chỉ show stack trace khi đang ở môi trường development
-        ...(process.env.NODE_ENV === "development" && { stack: err.stack })
+        message: err.message || "Có lỗi xảy ra trên server",
+        errors: err.errors || [], // Nếu bạn custom thêm err.errors
+        ...(isDev && { stack: err.stack })
     });
 };
