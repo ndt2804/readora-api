@@ -31,12 +31,18 @@ const userSchema = new mongoose.Schema(
         },
         password: {
             type: String,
-            required: true
+            required: true,
+            select: false
         },
         role: {
             type: String,
             enum: ["user", "admin"],
             default: "user"
+        },
+        refreshTokens: {
+            type: [String],
+            default: [],
+            select: false
         }
     },
     { timestamps: true }
