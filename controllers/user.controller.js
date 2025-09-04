@@ -1,5 +1,6 @@
-import { createUserService, getAllUsersService, getUserByIdService, loginService, refreshTokenService, logoutService } from "../services/user.service.js";
+import { forgotPasswordService, createUserService, getAllUsersService, getUserByIdService, loginService, refreshTokenService, logoutService, sendVerificationEmail, verifyEmail, sendResetPasswordEmail, resetPassword } from "../services/user.service.js";
 import { createUserSchema } from "../validations/user.validation.js";
+import User from "../models/user.model.js";
 export const createUser = async (req, res, next) => {
     try {
         const { error } = createUserSchema.validate(req.body, { abortEarly: false });
@@ -15,7 +16,7 @@ export const createUser = async (req, res, next) => {
         }
 
         const user = await createUserService(req.body);
-
+        await sendVerificationEmail(user);
         res.status(201).json({
             success: true,
             message: "Tạo người dùng thành công",
@@ -77,5 +78,36 @@ export const getUserById = async (req, res, next) => {
         });
     } catch (err) {
         next(err);
+    }
+};
+
+
+export const verifyEmailController = async (req, res) => {
+    try {
+        const { token } = req.query;
+        await verifyEmail(token);
+        res.json({ message: "Xác thực email thành công" });
+    } catch (err) {
+        res.status(400).json({ message: "Token không hợp lệ hoặc đã hết hạn" });
+    }
+};
+
+export const forgotPassword = async (req, res) => {
+    try {
+        const { email } = req.body;
+        const result = await forgotPasswordService(email);
+        res.json(result);
+    } catch (err) {
+        res.status(404).json({ message: err.message });
+    }
+};
+
+export const resetPasswordController = async (req, res) => {
+    try {
+        const { token, newPassword } = req.body;
+        await resetPassword(token, newPassword);
+        res.json({ message: "Đổi mật khẩu thành công" });
+    } catch (err) {
+        res.status(400).json({ message: "Token không hợp lệ hoặc đã hết hạn" });
     }
 };

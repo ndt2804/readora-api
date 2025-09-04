@@ -1,5 +1,6 @@
 import { Router } from "express";
-import { createUser, loginUser, refreshToken, logoutUser, getAllUsers, getUserById } from "../controllers/user.controller.js";
+import { authMiddleware, authorizeRole } from "../middlewares/auth.js";
+import { createUser, loginUser, refreshToken, logoutUser, getAllUsers, getUserById, verifyEmailController, forgotPassword, resetPasswordController } from "../controllers/user.controller.js";
 const routerUser = Router();
 
 /**
@@ -27,11 +28,28 @@ const routerUser = Router();
  *       201:
  *         description: Tạo user thành công
  */
+/**
+ * 
+ * 
+ * Auth routes (public)
+ */
 routerUser.post("/auth/register", createUser);
 routerUser.post("/auth/login", loginUser);
 routerUser.post("/auth/refresh-token", refreshToken);
 routerUser.post("/auth/logout", logoutUser);
-routerUser.get("/user", getAllUsers);
-routerUser.get("/:id", getUserById);
 
+/**
+ * User routes (protected)
+ */
+routerUser.get("/users", authMiddleware, authorizeRole("admin"), getAllUsers);
+routerUser.get("/users/:id", authMiddleware, getUserById);
+
+// Verify email
+routerUser.get("/verify", verifyEmailController);
+
+// Quên mật khẩu
+routerUser.post("/forgot-password", forgotPassword);
+
+// Reset mật khẩu
+routerUser.post("/reset-password", resetPasswordController);
 export default routerUser;
